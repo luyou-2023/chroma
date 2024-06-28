@@ -1,0 +1,110 @@
+ChromaDB: An Open-source vector database
+Debaprasann Bhoi
+GoPenAI
+Debaprasann Bhoi
+
+·
+Follow
+
+Published in
+GoPenAI
+
+·
+4 min read
+·
+Feb 12, 2024
+90
+
+
+
+
+
+Chroma is a Vector Store / Vector DB by the company Chroma. Chroma DB like many other Vector Stores out there, is for storing and retrieving vector embeddings. The good part is that Chroma is a Free and Open Source project. This gives other skilled developers out there in the world the to give suggestions and make tremendous improvements to the Database and even one can expect a quick reply to an issue when dealing with Open Source software, as the whole Open Source community is out there to see and resolve that issue.
+
+
+Let’s Start with Chroma DB
+In this section, we will install Chroma and see all the functionalities it provides. Firstly, we will install the library through the pip command
+
+!pip install chromadb -q
+!pip install sentence-transformers -q
+Chroma Vector Store API
+This will download the Chroma Vector Store API for Python. With this package, we can perform all tasks like storing the vector embeddings, retrieving them, and performing a semantic search for a given vector embedding.
+
+import chromadb
+from chromadb.config import Settings
+
+
+client = chromadb.Client(Settings(chroma_db_impl="duckdb+parquet",
+                                    persist_directory="/content/"
+                                ))
+Memory Database
+We will start off with creating a persistent in-memory database. The above code will create one for us. To create a client we take the Client() object from the Chroma DB. Now to create an in-memory database, we configure our client with the following parameters
+
+chroma_db_impl = “duckdb+parquet”
+persist_directory = “/content/”
+This will create an in-memory DuckDB database with the parquet file format. And we provide the directory for where this data is to be stored. Here we are saving the database in the /content/ folder. So whenever we connect to a Chroma DB client with this configuration, the Chroma DB will look for an existing database in the directory provided and will load it. If it is not present then it will create it. And when we close the connection, the data will be saved to this directory.
+
+Now, we will create a collection. Collection in Vector Store is where we save the set of vector embeddings, documents, and any metadata if present. Collection in a vector database can be thought of as a Table in Relational Database.
+
+Create Collection and Add Documents
+We will now create a collection and add documents to it.
+
+collection = client.create_collection("my_information")
+
+
+collection.add(
+    documents=["This is a document containing car information",
+    "This is a document containing information about dogs", 
+    "This document contains four wheeler catalogue"],
+    metadatas=[{"source": "Car Book"},{"source": "Dog Book"},{'source':'Vechile Info'}],
+    ids=["id1", "id2", "id3"]
+)
+Vector Databases
+So now the model has successfully stored our three documents in the form of vector embeddings in the vector store. Now, we will look at retrieving relevant documents from them. We will pass a query and will fetch the documents that are relevant to it. The corresponding code for this will be
+
+results = collection.query(
+    query_texts=["Car"],
+    n_results=2
+)
+
+
+print(results)
+Updating and Deleting Data
+collection.update(
+    ids=["id2"],
+    documents=["This is a document containing information about Cats"],
+    metadatas=[{"source": "Cat Book"}],
+)
+Query in Database
+results = collection.query(
+    query_texts=["Felines"],
+    n_results=1
+)
+
+
+print(results)
+Upset Function
+There is a similar function to the update function called the upsert() function. The only difference between both the update() and upsert() function is, if the document ID specified in the update() function does not exist, the update() function will raise an error. But in the case of the upsert() function, if the document ID doesn’t exist in the collection, then it will be added to the collection similar to the add() function.
+
+Sometimes, to reduce the space or remove unnecessary/ unwanted information, we might want to delete some documents from the collection in the Vector Store.
+
+collection.delete(ids = ['id1'])
+
+
+results = collection.query(
+    query_texts=["Car"],
+    n_results=2
+)
+
+
+print(results)
+Count Function
+collection.modify(name="new_collection_name")
+Modify Function
+my_collection = client.get_collection(name="my_information_2")
+
+client.delete_collection(name="my_information_2")
+Conclusion
+ChromaDB is a powerful tool that allows us to handle and search through data in a semantically meaningful way. It provides flexibility in terms of the transformer models used to create embeddings and offers efficient ways to narrow down search results. Whether you’re managing a small collection of documents or a large database, ChromaDB’s ability to handle semantic search can help you find the most relevant information quickly and accurately.
+
+I hope you found this tutorial on using ChromaDB for semantic search helpful. The power of machine learning and natural language processing opens up a new world of possibilities when it comes to information retrieval, and ChromaDB is a fantastic tool to have in your arsenal.
